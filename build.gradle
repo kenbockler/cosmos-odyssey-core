@@ -1,0 +1,75 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.2'
+	id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.bocklercode'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	dependencies {
+		// Spring Data JPA tugi, mis võimaldab töötada JPA (Java Persistence API) abil
+		implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+		// Spring Boot veebirakenduse tugi
+		implementation 'org.springframework.boot:spring-boot-starter-web'
+
+		// Spring Data REST tugi, mis võimaldab luua RESTful teenuseid Spring Data repositooriumite põhjal
+		implementation 'org.springframework.boot:spring-boot-starter-data-rest'
+
+		// Thymeleaf mallimootor veebivaadete genereerimiseks
+		implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+		// Spring Boot Actuator, mis võimaldab rakenduse jälgimist ja juhtimist
+		implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+		// Spring Boot valideerimise tugi, mis võimaldab sisendite valideerimist
+		implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+		// Flyway andmebaasi migreerimise tööriist
+		implementation 'org.flywaydb:flyway-core'
+
+		// Flyway PostgreSQL tugi
+		implementation 'org.flywaydb:flyway-database-postgresql'
+
+		// Lombok, mis lihtsustab Java koodi kirjutamist, pakkudes annotatsioone getterite, setterite jms genereerimiseks
+		compileOnly 'org.projectlombok:lombok'
+
+		// Spring Boot DevTools, mis kiirendab arendamist, pakkudes automaatset uuesti laadimist ja muid tööriistu
+		developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+		// PostgreSQL JDBC draiver, mis võimaldab PostgreSQL andmebaasiga ühenduse loomist
+		runtimeOnly 'org.postgresql:postgresql'
+
+		// Lombok annotatsioonitöötlus, mis on vajalik Lomboki annotatsioonide töötlemiseks kompileerimise ajal
+		annotationProcessor 'org.projectlombok:lombok'
+
+		// Spring Boot testimispakett, mis sisaldab tööriistu ja raamistikke rakenduste testimiseks
+		testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+		// JUnit platvormi käivitaja, mis võimaldab JUnit testide käivitamist
+		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	}
+
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
