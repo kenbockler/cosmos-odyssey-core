@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -38,6 +39,10 @@ public class Provider {
     private Instant flightEnd;
 
     @ManyToOne
-    @JoinColumn(name = "legs_id", nullable = false)
-    private Leg legs;
+    @JoinColumn(name = "leg_id", nullable = false)
+    private Leg leg;
+
+    public long getDuration() {
+        return Duration.between(flightStart, flightEnd).toMinutes(); // Kestvuse arvutamine minutites
+    }
 }

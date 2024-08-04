@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -15,19 +14,19 @@ import java.util.UUID;
 public class DataLoaderService {
 
     private final APIClient apiClient;
-    private final LegsRepository legsRepository;
+    private final LegRepository legRepository;
     private final PriceListRepository priceListRepository;
-    private final ProvidersRepository providersRepository;
+    private final ProviderRepository providerRepository;
 
     @Autowired
     public DataLoaderService(APIClient apiClient,
-                             LegsRepository legsRepository,
+                             LegRepository legRepository,
                              PriceListRepository priceListRepository,
-                             ProvidersRepository providersRepository) {
+                             ProviderRepository providerRepository) {
         this.apiClient = apiClient;
-        this.legsRepository = legsRepository;
+        this.legRepository = legRepository;
         this.priceListRepository = priceListRepository;
-        this.providersRepository = providersRepository;
+        this.providerRepository = providerRepository;
     }
 
     @PostConstruct
@@ -45,17 +44,26 @@ public class DataLoaderService {
         UUID pricelistId = UUID.fromString(apiResponse.getId());
         Instant validUntil = Instant.parse(apiResponse.getValidUntil());
 
+        // Salvesta price list
+        PriceList priceList = PriceList.builder()
+                .id(pricelistId)
+                .validUntil(validUntil)
+                .createdAt(Instant.now())
+                .build();
+        priceListRepository.save(priceList);
+
         // Salvesta legs andmed
         for (APIResponse.Leg apiLeg : apiResponse.getLegs()) {
             Leg leg = new Leg();
-            leg.setLegsId(UUID.randomUUID());
+            leg.setLegId(UUID.randomUUID());
             leg.setRouteId(UUID.fromString(apiLeg.getRouteInfo().getId()));
             leg.setFromId(UUID.fromString(apiLeg.getRouteInfo().getFrom().getId()));
             leg.setFromName(apiLeg.getRouteInfo().getFrom().getName());
             leg.setToId(UUID.fromString(apiLeg.getRouteInfo().getTo().getId()));
             leg.setToName(apiLeg.getRouteInfo().getTo().getName());
             leg.setDistance(apiLeg.getRouteInfo().getDistance());
-            legsRepository.save(leg);
+            leg.setPricelist(priceList);
+            legRepository.save(leg);
 
             // Salvesta providers andmed
             for (APIResponse.Leg.Provider apiProvider : apiLeg.getProviders()) {
@@ -66,18 +74,9 @@ public class DataLoaderService {
                 provider.setPrice(BigDecimal.valueOf(apiProvider.getPrice()));
                 provider.setFlightStart(Instant.parse(apiProvider.getFlightStart()));
                 provider.setFlightEnd(Instant.parse(apiProvider.getFlightEnd()));
-                provider.setLegs(leg);
-                providersRepository.save(provider);
+                provider.setLeg(leg);
+                providerRepository.save(provider);
             }
-
-            // Salvesta price list
-            PriceList priceList = PriceList.builder()
-                    .id(pricelistId)
-                    .validUntil(validUntil)
-                    .createdAt(Instant.now())
-                    .leg(leg)
-                    .build();
-            priceListRepository.save(priceList);
         }
     }
 

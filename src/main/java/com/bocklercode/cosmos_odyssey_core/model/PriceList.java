@@ -24,17 +24,6 @@ public class PriceList {
     @Column(nullable = false)
     private Instant validUntil;
 
-    @ManyToOne
-    @JoinColumn(name = "legs_id", nullable = false)
-    private Leg leg;
-
     @Column(nullable = false)
     private Instant createdAt;
-
-    @PrePersist
-    protected void onPrePersist() {
-        if (createdAt == null) {
-            createdAt = Instant.now();
-        }
-    }
 }

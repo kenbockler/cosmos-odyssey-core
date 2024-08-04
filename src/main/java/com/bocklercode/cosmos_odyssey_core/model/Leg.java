@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;  // Lisa see import
 import java.util.UUID;
 
 @Data
@@ -17,8 +18,8 @@ import java.util.UUID;
 public class Leg {
 
     @Id
-    @Column(name = "legs_id")
-    private UUID legsId;
+    @Column(name = "leg_id")
+    private UUID legId;
 
     @Column(unique = true)
     private UUID routeId;
@@ -37,4 +38,8 @@ public class Leg {
 
     @Column(nullable = false)
     private Long distance;
+
+    @ManyToOne
+    @JoinColumn(name = "pricelist_id", nullable = false)
+    private PriceList pricelist;
 }

@@ -2,10 +2,10 @@ package com.bocklercode.cosmos_odyssey_core.repository;
 
 import com.bocklercode.cosmos_odyssey_core.model.Provider;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
-@Repository
-public interface ProvidersRepository extends JpaRepository<Provider, UUID> {
+public interface ProviderRepository extends JpaRepository<Provider, UUID> {
+    List<Provider> findAllByLeg_LegId(UUID legId);
 }
