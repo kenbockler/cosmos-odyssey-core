@@ -3,6 +3,7 @@ package com.bocklercode.cosmos_odyssey_core.service;
 import com.bocklercode.cosmos_odyssey_core.model.*;
 import com.bocklercode.cosmos_odyssey_core.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
@@ -17,16 +18,19 @@ public class DataLoaderService {
     private final LegRepository legRepository;
     private final PriceListRepository priceListRepository;
     private final ProviderRepository providerRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
     public DataLoaderService(APIClient apiClient,
                              LegRepository legRepository,
                              PriceListRepository priceListRepository,
-                             ProviderRepository providerRepository) {
+                             ProviderRepository providerRepository,
+                             JdbcTemplate jdbcTemplate) {
         this.apiClient = apiClient;
         this.legRepository = legRepository;
         this.priceListRepository = priceListRepository;
         this.providerRepository = providerRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @PostConstruct
@@ -35,6 +39,7 @@ public class DataLoaderService {
             System.out.println("Data is already loaded, skipping initialization.");
         } else {
             loadData();
+            createCombinedTable();
         }
     }
 
@@ -78,6 +83,12 @@ public class DataLoaderService {
                 providerRepository.save(provider);
             }
         }
+    }
+
+    private void createCombinedTable() {
+        String sql = "CREATE TABLE IF NOT EXISTS provider_leg_pricelist_combined AS SELECT p.provider_id, p.company_id, p.company_name, p.price, p.flight_start, p.flight_end, p.duration, l.leg_id, l.route_id, l.from_id, l.from_name, l.to_id, l.to_name, l.distance, pr.pricelist_id, pr.valid_until, pr.created_at FROM providers p JOIN legs l ON p.leg_id = l.leg_id JOIN pricelists pr ON l.pricelist_id = pr.pricelist_id;";
+        jdbcTemplate.execute(sql);
+        System.out.println("Combined table created successfully.");
     }
 
     private boolean isDataLoaded() {

@@ -38,11 +38,20 @@ public class Provider {
     @Column(name = "flight_end", nullable = false)
     private Instant flightEnd;
 
+    @Column(nullable = false)
+    private long duration;  // Kestvus millisekundites
+
     @ManyToOne
     @JoinColumn(name = "leg_id", nullable = false)
     private Leg leg;
 
+    @PrePersist
+    @PreUpdate
+    private void calculateDuration() {
+        this.duration = Duration.between(flightStart, flightEnd).toMillis(); // Kestvuse arvutamine millisekundites
+    }
+
     public long getDuration() {
-        return Duration.between(flightStart, flightEnd).toMinutes(); // Kestvuse arvutamine minutites
+        return Duration.between(flightStart, flightEnd).toMillis(); // Kestvuse arvutamine millisekundites
     }
 }

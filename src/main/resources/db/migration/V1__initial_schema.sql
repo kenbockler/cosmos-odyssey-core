@@ -19,14 +19,14 @@ CREATE TABLE legs
 
 CREATE TABLE providers
 (
-    provider_id  UUID           NOT NULL,
+    provider_id  UUID PRIMARY KEY,
     company_id   UUID           NOT NULL,
     company_name VARCHAR(100)   NOT NULL,
     price        NUMERIC(10, 2) NOT NULL,
     flight_start TIMESTAMP      NOT NULL,
     flight_end   TIMESTAMP      NOT NULL,
+    duration     BIGINT         NOT NULL,
     leg_id       UUID           NOT NULL,
-    PRIMARY KEY (provider_id, leg_id),
     CONSTRAINT provider_flight_duration CHECK (flight_end > flight_start),
     FOREIGN KEY (leg_id) REFERENCES legs (leg_id)
 );
@@ -61,5 +61,5 @@ CREATE TABLE reservations
     total_travel_time INTERVAL       NOT NULL,
     reservation_time  TIMESTAMP      NOT NULL,
     FOREIGN KEY (leg_id) REFERENCES legs (leg_id),
-    FOREIGN KEY (provider_id, leg_id) REFERENCES providers (provider_id, leg_id)
+    FOREIGN KEY (provider_id) REFERENCES providers (provider_id)
 );
