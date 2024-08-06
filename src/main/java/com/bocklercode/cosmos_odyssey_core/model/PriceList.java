@@ -14,16 +14,13 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "pricelists")
+@Table(name = "price_lists")
 public class PriceList {
 
     @Id
-    @Column(name = "pricelist_id")
-    private UUID id;
+    @Column(name = "price_list_id")
+    private UUID priceListId;
 
     @Column(nullable = false)
     private Instant validUntil;
-
-    @Column(nullable = false)
-    private Instant createdAt;
 }

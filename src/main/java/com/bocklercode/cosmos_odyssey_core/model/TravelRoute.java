@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -13,12 +14,12 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "routes")
-public class Route {
+@Table(name = "travel_routes")
+public class TravelRoute {
 
     @Id
-    @Column(name = "route_id")
-    private UUID routeId;
+    @Column(name = "travel_route_id")
+    private UUID travelRouteId;
 
     @Column(name = "from_id", nullable = false)
     private UUID fromId;
@@ -32,10 +33,12 @@ public class Route {
     @Column(name = "to_name", nullable = false)
     private String toName;
 
-    @Column(name = "distance", nullable = false)
-    private long distance;
+    @Column(name = "total_quoted_travel_time", nullable = false)
+    private long totalQuotedTravelTime;
 
-    @OneToOne
-    @JoinColumn(name = "leg_id", nullable = false, unique = true)
-    private Leg leg;
+    @Column(name = "total_quoted_price", nullable = false)
+    private BigDecimal totalQuotedPrice;
+
+    @Column(name = "total_quoted_duration", nullable = false)
+    private long totalQuotedDuration;
 }

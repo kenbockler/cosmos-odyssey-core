@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -16,8 +15,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "providers")
-public class Provider {
+@Table(name = "provider_leg_route_combined")
+public class ProviderLegRouteCombined {
 
     @Id
     @Column(name = "provider_id")
@@ -41,7 +40,21 @@ public class Provider {
     @Column(name = "duration", nullable = false)
     private long duration;
 
-    @ManyToOne
-    @JoinColumn(name = "leg_id", nullable = false)
-    private Leg leg;
+    @Column(name = "leg_id", nullable = false)
+    private UUID legId;
+
+    @Column(name = "from_id", nullable = false)
+    private UUID fromId;
+
+    @Column(name = "from_name", nullable = false)
+    private String fromName;
+
+    @Column(name = "to_id", nullable = false)
+    private UUID toId;
+
+    @Column(name = "to_name", nullable = false)
+    private String toName;
+
+    @Column(name = "distance", nullable = false)
+    private long distance;
 }

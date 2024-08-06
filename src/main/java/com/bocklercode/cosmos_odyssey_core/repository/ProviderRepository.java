@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ProviderRepository extends JpaRepository<Provider, UUID> {
-    List<Provider> findAllByLeg_LegId(UUID legId);
+    List<Provider> findByLeg_LegId(UUID legId);
 }
