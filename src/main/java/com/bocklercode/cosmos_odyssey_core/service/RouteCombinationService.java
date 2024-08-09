@@ -47,8 +47,8 @@ public class RouteCombinationService {
     private void generateCombinationsRecursive(FlightRoute currentRoute, List<FlightRoute> allRoutes,
                                                List<FlightRoute> currentCombination, List<CombinedRoute> results,
                                                Set<String> visitedLocations) {
-        // Lisame praeguse teekonna nime külastatud asukohtade hulka
-        if (!visitedLocations.add(currentRoute.getFromName())) {
+        // Lisame praeguse teekonna lõpp-punkti külastatud asukohtade hulka
+        if (!visitedLocations.add(currentRoute.getToName())) {
             return; // Kui see asukoht on juba külastatud, lõpetame rekursiooni
         }
 
@@ -69,6 +69,7 @@ public class RouteCombinationService {
             }
         }
     }
+
 
     private CombinedRoute createCombinedRoute(List<FlightRoute> flightRoutes) {
         UUID combinedRouteId = UUID.randomUUID();
