@@ -51,6 +51,7 @@ public class RouteCombinationService {
     }
 
 
+
     private List<CombinedRoute> generateCombinations(FlightRoute startRoute, List<FlightRoute> allRoutes) {
         List<CombinedRoute> results = new ArrayList<>();
         generateCombinationsRecursive(startRoute, allRoutes, new ArrayList<>(), results, new HashSet<>());
@@ -60,21 +61,23 @@ public class RouteCombinationService {
     private void generateCombinationsRecursive(FlightRoute currentRoute, List<FlightRoute> allRoutes,
                                                List<FlightRoute> currentCombination, List<CombinedRoute> results,
                                                Set<String> visitedLocations) {
-        // Lisame praeguse teekonna lõpp-punkti külastatud asukohtade hulka
+        // Kui lõpp-punkt on juba külastatud (olenemata eelnevast sihtkohast), katkesta rekursioon
         if (!visitedLocations.add(currentRoute.getToName())) {
-            return; // Kui see asukoht on juba külastatud, lõpetame rekursiooni
+            return;
         }
 
+        // Lisa praegune teekond kombinatsiooni
         currentCombination.add(currentRoute);
 
-        // Leia kõik järgmised lennud, mis algavad praeguse teekonna lõpp-punktist
+        // Leia järgmised teekonnad, mis algavad praeguse teekonna lõpp-punktist
         List<FlightRoute> nextRoutes = allRoutes.stream()
                 .filter(route -> route.getFromName().equals(currentRoute.getToName()))
                 .filter(route -> !route.getFlightStart().isBefore(currentRoute.getFlightEnd())) // Kontroll, et järgmine lend ei alga enne eelmist
+                .filter(route -> !visitedLocations.contains(route.getToName())) // Väldi tagasiminekut sama sihtkoha kaudu
                 .collect(Collectors.toList());
 
         if (nextRoutes.isEmpty()) {
-            // Kui teekonna lõpp-punkti ei ole rohkem jätkuvaid lende, salvestame kombinatsiooni
+            // Kui rohkem lende ei ole, salvesta kombinatsioon
             results.add(createCombinedRoute(currentCombination));
         } else {
             for (FlightRoute nextRoute : nextRoutes) {
