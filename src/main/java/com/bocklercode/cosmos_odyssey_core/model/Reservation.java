@@ -1,5 +1,6 @@
 package com.bocklercode.cosmos_odyssey_core.model;
 
+import com.bocklercode.cosmos_odyssey_core.model.model_travel_prices_api.PriceList;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

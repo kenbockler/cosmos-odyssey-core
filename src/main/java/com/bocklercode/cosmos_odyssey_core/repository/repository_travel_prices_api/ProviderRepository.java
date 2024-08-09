@@ -1,6 +1,6 @@
-package com.bocklercode.cosmos_odyssey_core.repository;
+package com.bocklercode.cosmos_odyssey_core.repository.repository_travel_prices_api;
 
-import com.bocklercode.cosmos_odyssey_core.model.Provider;
+import com.bocklercode.cosmos_odyssey_core.model.model_travel_prices_api.Provider;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,7 +1,11 @@
 package com.bocklercode.cosmos_odyssey_core.service;
 
-import com.bocklercode.cosmos_odyssey_core.model.*;
+import com.bocklercode.cosmos_odyssey_core.model.model_travel_prices_api.*;
 import com.bocklercode.cosmos_odyssey_core.repository.*;
+import com.bocklercode.cosmos_odyssey_core.repository.repository_travel_prices_api.LegRepository;
+import com.bocklercode.cosmos_odyssey_core.repository.repository_travel_prices_api.PriceListRepository;
+import com.bocklercode.cosmos_odyssey_core.repository.repository_travel_prices_api.ProviderRepository;
+import com.bocklercode.cosmos_odyssey_core.repository.repository_travel_prices_api.RouteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;

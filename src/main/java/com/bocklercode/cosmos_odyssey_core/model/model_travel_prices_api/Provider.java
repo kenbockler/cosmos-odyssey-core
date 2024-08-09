@@ -1,4 +1,4 @@
-package com.bocklercode.cosmos_odyssey_core.model;
+package com.bocklercode.cosmos_odyssey_core.model.model_travel_prices_api;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 

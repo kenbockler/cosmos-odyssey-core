@@ -1,6 +1,6 @@
 package com.bocklercode.cosmos_odyssey_core.service;
 
-import com.bocklercode.cosmos_odyssey_core.model.APIResponse;
+import com.bocklercode.cosmos_odyssey_core.model.model_travel_prices_api.APIResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
