@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -25,9 +23,10 @@ public class DataLoaderService implements ApplicationRunner {
     private final RouteRepository routeRepository;
     private final CalculatedRouteRepository calculatedRouteRepository;
     private final ProviderLegRouteCombinedRepository providerLegRouteCombinedRepository;
-    private final GraphService graphService;
-    private final CalculatedRouteService calculatedRouteService;
     private final JdbcTemplate jdbcTemplate;
+    private final FlightRouteService flightRouteService;
+    private final CombinedRouteRepository combinedRouteRepository;
+    private final RouteCombinationService routeCombinationService;
 
     @Autowired
     public DataLoaderService(APIClient apiClient,
@@ -37,9 +36,8 @@ public class DataLoaderService implements ApplicationRunner {
                              RouteRepository routeRepository,
                              CalculatedRouteRepository calculatedRouteRepository,
                              ProviderLegRouteCombinedRepository providerLegRouteCombinedRepository,
-                             GraphService graphService,
-                             CalculatedRouteService calculatedRouteService,
-                             JdbcTemplate jdbcTemplate) {
+                             JdbcTemplate jdbcTemplate, FlightRouteService flightRouteService,
+                             CombinedRouteRepository combinedRouteRepository, RouteCombinationService routeCombinationService) {
         this.apiClient = apiClient;
         this.legRepository = legRepository;
         this.priceListRepository = priceListRepository;
@@ -47,9 +45,10 @@ public class DataLoaderService implements ApplicationRunner {
         this.routeRepository = routeRepository;
         this.calculatedRouteRepository = calculatedRouteRepository;
         this.providerLegRouteCombinedRepository = providerLegRouteCombinedRepository;
-        this.graphService = graphService;
-        this.calculatedRouteService = calculatedRouteService;
         this.jdbcTemplate = jdbcTemplate;
+        this.flightRouteService = flightRouteService;
+        this.combinedRouteRepository = combinedRouteRepository;
+        this.routeCombinationService = routeCombinationService;
     }
 
     @Override
@@ -66,10 +65,16 @@ public class DataLoaderService implements ApplicationRunner {
             System.out.println("Combined table data is already loaded, skipping table creation.");
         }
 
-        if (!isCalculatedRoutesDataLoaded()) {
-            processCalculatedRoutes();
+        if (!isSaveFlightRoutesLoaded()) {
+            flightRouteService.saveFlightRoutes();
         } else {
-            System.out.println("Calculated routes are already loaded, skipping graph building.");
+            System.out.println("Flight routes are already saved, skipping saving flight routes.");
+        }
+
+        if (!isrouteCombinationServiceLoaded()) {
+            routeCombinationService.generateAndSaveRouteCombinations();
+        } else {
+            System.out.println("Route combinations are already saved, skipping saving route combinations.");
         }
     }
 
@@ -81,8 +86,12 @@ public class DataLoaderService implements ApplicationRunner {
         return providerLegRouteCombinedRepository.count() > 0;
     }
 
-    private boolean isCalculatedRoutesDataLoaded() {
+    private boolean isSaveFlightRoutesLoaded() {
         return calculatedRouteRepository.count() > 0;
+    }
+
+    private boolean isrouteCombinationServiceLoaded() {
+        return combinedRouteRepository.count() > 0;
     }
 
     public void loadData() {
@@ -155,17 +164,5 @@ public class DataLoaderService implements ApplicationRunner {
         jdbcTemplate.execute(createSql);
 
         System.out.println("Combined table created successfully.");
-    }
-
-    private void processCalculatedRoutes() {
-        // Ehita ja prindi graaf
-        Map<String, List<GraphEdge>> graph = graphService.buildGraph();
-
-        // Otsime ja salvestame lühimad teed (näiteks Earth'ist kõikidele teistele)
-        for (String planet : graph.keySet()) {
-            if (!planet.equals("Earth")) {
-                calculatedRouteService.findAndSaveShortestPath(graph, "Earth", planet);
-            }
-        }
     }
 }

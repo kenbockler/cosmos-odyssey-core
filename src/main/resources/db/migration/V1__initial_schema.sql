@@ -37,17 +37,33 @@ CREATE TABLE routes
     FOREIGN KEY (leg_id) REFERENCES legs (leg_id)
 );
 
-CREATE TABLE calculated_routes
+DROP TABLE IF EXISTS flight_route;
+CREATE TABLE flight_routes
 (
-    calculated_route_id      UUID PRIMARY KEY,
+    flight_route_id          UUID PRIMARY KEY,
     from_name                VARCHAR(255)   NOT NULL,
     to_name                  VARCHAR(255)   NOT NULL,
-    company_names            TEXT           NOT NULL,
+    flight_start             TIMESTAMP      NOT NULL,
+    flight_end               TIMESTAMP      NOT NULL,
+    company_name             VARCHAR(255)   NOT NULL,
     total_quoted_price       NUMERIC(10, 2) NOT NULL,
-    total_trip_start         TIMESTAMP      NOT NULL,
-    total_trip_end           TIMESTAMP      NOT NULL,
     total_quoted_travel_time BIGINT         NOT NULL,
     total_quoted_distance    BIGINT         NOT NULL
+);
+
+DROP TABLE IF EXISTS combined_routes;
+CREATE TABLE combined_routes
+(
+    combined_route_id  UUID PRIMARY KEY,
+    from_name          VARCHAR(255)   NOT NULL,
+    to_name            VARCHAR(255)   NOT NULL,
+    route              TEXT           NOT NULL,
+    first_flight_start TIMESTAMP      NOT NULL,
+    last_flight_end    TIMESTAMP      NOT NULL,
+    company_names      TEXT           NOT NULL,
+    total_price        NUMERIC(10, 2) NOT NULL,
+    total_travel_time  BIGINT         NOT NULL,
+    total_distance     BIGINT         NOT NULL
 );
 
 
