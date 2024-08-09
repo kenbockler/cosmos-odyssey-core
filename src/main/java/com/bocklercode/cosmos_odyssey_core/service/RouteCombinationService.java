@@ -32,11 +32,24 @@ public class RouteCombinationService {
     public void generateAndSaveRouteCombinations() {
         List<FlightRoute> allRoutes = flightRouteRepository.findAll();
 
-        for (FlightRoute initialRoute : allRoutes) {
-            List<CombinedRoute> combinations = generateCombinations(initialRoute, allRoutes);
-            combinedRouteRepository.saveAll(combinations);
+        // Loo komplekt kõigist unikaalsetest alguspunktidest
+        Set<String> uniqueStartingPoints = allRoutes.stream()
+                .map(FlightRoute::getFromName)
+                .collect(Collectors.toSet());
+
+        // Töötle kõik võimalikud teekonnad igast unikaalsest alguspunktist
+        for (String startingPoint : uniqueStartingPoints) {
+            List<FlightRoute> startingRoutes = allRoutes.stream()
+                    .filter(route -> route.getFromName().equals(startingPoint))
+                    .collect(Collectors.toList());
+
+            for (FlightRoute initialRoute : startingRoutes) {
+                List<CombinedRoute> combinations = generateCombinations(initialRoute, allRoutes);
+                combinedRouteRepository.saveAll(combinations);
+            }
         }
     }
+
 
     private List<CombinedRoute> generateCombinations(FlightRoute startRoute, List<FlightRoute> allRoutes) {
         List<CombinedRoute> results = new ArrayList<>();
@@ -75,9 +88,13 @@ public class RouteCombinationService {
         UUID combinedRouteId = UUID.randomUUID();
         String fromName = flightRoutes.get(0).getFromName();
         String toName = flightRoutes.get(flightRoutes.size() - 1).getToName();
+
+        // Muudame teekonna loogikat, et see kuvaks pidevat stringi ilma liigsete komade ja tühikuteta
         String route = flightRoutes.stream()
-                .map(fr -> fr.getFromName() + " --> " + fr.getToName())
-                .collect(Collectors.joining(", "));
+                .map(FlightRoute::getFromName)
+                .collect(Collectors.joining("-->"))
+                + "-->" + toName; // Lisame lõpp-punkti
+
         Instant firstFlightStart = flightRoutes.get(0).getFlightStart();
         Instant lastFlightEnd = flightRoutes.get(flightRoutes.size() - 1).getFlightEnd();
         String companyNames = flightRoutes.stream()
@@ -106,4 +123,5 @@ public class RouteCombinationService {
                 .totalDistance(totalDistance)
                 .build();
     }
+
 }
