@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class GraphEdge {
     private String fromName;
     private String toName;
-    private GraphNode node;
+    private List<GraphNode> nodes;
 }

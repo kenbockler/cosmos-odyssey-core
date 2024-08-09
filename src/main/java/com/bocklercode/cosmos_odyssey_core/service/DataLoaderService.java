@@ -3,24 +3,30 @@ package com.bocklercode.cosmos_odyssey_core.service;
 import com.bocklercode.cosmos_odyssey_core.model.*;
 import com.bocklercode.cosmos_odyssey_core.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
-public class DataLoaderService {
+public class DataLoaderService implements ApplicationRunner {
 
     private final APIClient apiClient;
     private final LegRepository legRepository;
     private final PriceListRepository priceListRepository;
     private final ProviderRepository providerRepository;
     private final RouteRepository routeRepository;
-    private final TravelRouteService travelRouteService;
+    private final CalculatedRouteRepository calculatedRouteRepository;
+    private final ProviderLegRouteCombinedRepository providerLegRouteCombinedRepository;
+    private final GraphService graphService;
+    private final CalculatedRouteService calculatedRouteService;
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -29,26 +35,54 @@ public class DataLoaderService {
                              PriceListRepository priceListRepository,
                              ProviderRepository providerRepository,
                              RouteRepository routeRepository,
-                             TravelRouteService travelRouteService,
+                             CalculatedRouteRepository calculatedRouteRepository,
+                             ProviderLegRouteCombinedRepository providerLegRouteCombinedRepository,
+                             GraphService graphService,
+                             CalculatedRouteService calculatedRouteService,
                              JdbcTemplate jdbcTemplate) {
         this.apiClient = apiClient;
         this.legRepository = legRepository;
         this.priceListRepository = priceListRepository;
         this.providerRepository = providerRepository;
         this.routeRepository = routeRepository;
-        this.travelRouteService = travelRouteService;
+        this.calculatedRouteRepository = calculatedRouteRepository;
+        this.providerLegRouteCombinedRepository = providerLegRouteCombinedRepository;
+        this.graphService = graphService;
+        this.calculatedRouteService = calculatedRouteService;
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @PostConstruct
-    public void init() {
-        if (isDataLoaded()) {
-            System.out.println("Data is already loaded, skipping initialization.");
-        } else {
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        if (!isDataLoaded()) {
             loadData();
-            travelRouteService.calculateAndSaveTravelRoutes();
-            createCombinedTable();
+        } else {
+            System.out.println("Data is already loaded, skipping data loading.");
         }
+
+        if (!isCombinedTableDataLoaded()) {
+            createCombinedTable();
+        } else {
+            System.out.println("Combined table data is already loaded, skipping table creation.");
+        }
+
+        if (!isCalculatedRoutesDataLoaded()) {
+            processCalculatedRoutes();
+        } else {
+            System.out.println("Calculated routes are already loaded, skipping graph building.");
+        }
+    }
+
+    private boolean isDataLoaded() {
+        return priceListRepository.count() > 0;
+    }
+
+    private boolean isCombinedTableDataLoaded() {
+        return providerLegRouteCombinedRepository.count() > 0;
+    }
+
+    private boolean isCalculatedRoutesDataLoaded() {
+        return calculatedRouteRepository.count() > 0;
     }
 
     public void loadData() {
@@ -109,17 +143,29 @@ public class DataLoaderService {
     }
 
     private void createCombinedTable() {
-        String sql = "CREATE TABLE IF NOT EXISTS provider_leg_route_combined AS " +
+        String dropSql = "DROP TABLE IF EXISTS provider_leg_route_combined";
+        jdbcTemplate.execute(dropSql);
+
+        String createSql = "CREATE TABLE provider_leg_route_combined AS " +
                 "SELECT p.provider_id, p.company_id, p.company_name, p.price, p.flight_start, p.flight_end, p.duration, " +
                 "l.leg_id, r.from_id, r.from_name, r.to_id, r.to_name, r.distance " +
                 "FROM providers p " +
                 "JOIN legs l ON p.leg_id = l.leg_id " +
-                "JOIN routes r ON l.leg_id = r.leg_id;";
-        jdbcTemplate.execute(sql);
+                "JOIN routes r ON l.leg_id = r.leg_id";
+        jdbcTemplate.execute(createSql);
+
         System.out.println("Combined table created successfully.");
     }
 
-    private boolean isDataLoaded() {
-        return priceListRepository.count() > 0;
+    private void processCalculatedRoutes() {
+        // Ehita ja prindi graaf
+        Map<String, List<GraphEdge>> graph = graphService.buildGraph();
+
+        // Otsime ja salvestame lühimad teed (näiteks Earth'ist kõikidele teistele)
+        for (String planet : graph.keySet()) {
+            if (!planet.equals("Earth")) {
+                calculatedRouteService.findAndSaveShortestPath(graph, "Earth", planet);
+            }
+        }
     }
 }

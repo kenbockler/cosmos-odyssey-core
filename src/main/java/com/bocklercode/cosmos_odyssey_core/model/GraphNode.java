@@ -12,7 +12,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GraphNode {
-    private UUID companyId;
+    private UUID providerId;
+    private String companyName;
     private BigDecimal price;
     private Instant flightStart;
     private Instant flightEnd;

@@ -37,17 +37,19 @@ CREATE TABLE routes
     FOREIGN KEY (leg_id) REFERENCES legs (leg_id)
 );
 
-CREATE TABLE travel_routes
+CREATE TABLE calculated_routes
 (
-    travel_route_id          UUID PRIMARY KEY,
-    from_id                  UUID           NOT NULL,
+    calculated_route_id      UUID PRIMARY KEY,
     from_name                VARCHAR(255)   NOT NULL,
-    to_id                    UUID           NOT NULL,
     to_name                  VARCHAR(255)   NOT NULL,
-    total_quoted_travel_time BIGINT         NOT NULL,
+    company_names            TEXT           NOT NULL,
     total_quoted_price       NUMERIC(10, 2) NOT NULL,
-    total_quoted_duration    BIGINT         NOT NULL
+    total_trip_start         TIMESTAMP      NOT NULL,
+    total_trip_end           TIMESTAMP      NOT NULL,
+    total_quoted_travel_time BIGINT         NOT NULL,
+    total_quoted_distance    BIGINT         NOT NULL
 );
+
 
 -- Users tabel
 CREATE TABLE users
