@@ -1,9 +1,12 @@
+-- Tabels price_lists, legs, providers, routes is used to store the data from the external API
+DROP TABLE IF EXISTS price_lists;
 CREATE TABLE price_lists
 (
     price_list_id UUID PRIMARY KEY,
     valid_until   TIMESTAMP NOT NULL
 );
 
+DROP TABLE IF EXISTS legs;
 CREATE TABLE legs
 (
     leg_id        UUID PRIMARY KEY,
@@ -11,6 +14,7 @@ CREATE TABLE legs
     FOREIGN KEY (price_list_id) REFERENCES price_lists (price_list_id)
 );
 
+DROP TABLE IF EXISTS providers;
 CREATE TABLE providers
 (
     provider_id  UUID PRIMARY KEY,
@@ -25,6 +29,7 @@ CREATE TABLE providers
     CONSTRAINT provider_flight_duration CHECK (flight_end > flight_start)
 );
 
+DROP TABLE IF EXISTS routes;
 CREATE TABLE routes
 (
     route_id  UUID PRIMARY KEY,
@@ -37,7 +42,9 @@ CREATE TABLE routes
     FOREIGN KEY (leg_id) REFERENCES legs (leg_id)
 );
 
-DROP TABLE IF EXISTS flight_route;
+-- The table flight_routes is an intermediate table that contains only the necessary fields to compile the final routes.
+-- The table flight_routes includes all possible flights offered by various providers.
+DROP TABLE IF EXISTS flight_routes;
 CREATE TABLE flight_routes
 (
     flight_route_id          UUID PRIMARY KEY,
@@ -51,6 +58,7 @@ CREATE TABLE flight_routes
     total_quoted_distance    BIGINT         NOT NULL
 );
 
+-- The table combined_routes is a table that contains all routes from different providers to every planet.
 DROP TABLE IF EXISTS combined_routes;
 CREATE TABLE combined_routes
 (
@@ -68,6 +76,7 @@ CREATE TABLE combined_routes
 
 
 -- Users tabel
+-- The table users is used to store the user data.
 CREATE TABLE users
 (
     user_id       UUID PRIMARY KEY,
@@ -78,6 +87,8 @@ CREATE TABLE users
     last_name     VARCHAR(255) NOT NULL
 );
 
+-- Reservations tabel
+-- The table reservations is used to store the reservation data.
 CREATE TABLE reservations
 (
     reservation_id           UUID PRIMARY KEY,
@@ -89,7 +100,7 @@ CREATE TABLE reservations
     FOREIGN KEY (user_id) REFERENCES users (user_id)
 );
 
-
+-- The table reservation_routes is an intermediate table that contains only the necessary fields to compile the final routes.
 CREATE TABLE reservation_routes
 (
     id             UUID PRIMARY KEY,
@@ -100,4 +111,3 @@ CREATE TABLE reservation_routes
     FOREIGN KEY (route_id) REFERENCES routes (route_id),
     FOREIGN KEY (provider_id) REFERENCES providers (provider_id)
 );
-

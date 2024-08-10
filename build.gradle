@@ -1,75 +1,59 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.3.2'
-	id 'io.spring.dependency-management' version '1.1.6'
+    id 'java'
+    id 'org.springframework.boot' version '3.3.2'
+    id 'io.spring.dependency-management' version '1.1.6'
 }
 
 group = 'com.bocklercode'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+    // Configure the Java compiler to use a specific version of Java
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    // Configuration for dependencies that are needed only at compile time and not at runtime
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    // Maven central repository to pull dependencies
+    mavenCentral()
 }
 
 dependencies {
-	dependencies {
-		// Spring Data JPA tugi, mis võimaldab töötada JPA (Java Persistence API) abil
-		implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    dependencies {
+        // Adds support for Spring Data JPA for database interactions using JPA
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        // Adds support for building web applications with Spring Boot
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        // Adds Spring Data REST support to expose Spring Data repositories as RESTful services
+        implementation 'org.springframework.boot:spring-boot-starter-data-rest'
+        // Thymeleaf template engine for creating dynamic HTML views
+        implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+        // Spring Boot Actuator for monitoring and managing the application
+        implementation 'org.springframework.boot:spring-boot-starter-actuator'
+        // Spring Boot starter for validation capabilities
+        implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-		// Spring Boot veebirakenduse tugi
-		implementation 'org.springframework.boot:spring-boot-starter-web'
+        // Flyway core library for database migration
+        implementation 'org.flywaydb:flyway-core'
+        // Flyway support for PostgreSQL database
+        implementation 'org.flywaydb:flyway-database-postgresql'
 
-		// Spring Data REST tugi, mis võimaldab luua RESTful teenuseid Spring Data repositooriumite põhjal
-		implementation 'org.springframework.boot:spring-boot-starter-data-rest'
-
-		// Thymeleaf mallimootor veebivaadete genereerimiseks
-		implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-
-		// Spring Boot Actuator, mis võimaldab rakenduse jälgimist ja juhtimist
-		implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-		// Spring Boot valideerimise tugi, mis võimaldab sisendite valideerimist
-		implementation 'org.springframework.boot:spring-boot-starter-validation'
-
-		// Flyway andmebaasi migreerimise tööriist
-		implementation 'org.flywaydb:flyway-core'
-
-		// Flyway PostgreSQL tugi
-		implementation 'org.flywaydb:flyway-database-postgresql'
-
-		// Lombok, mis lihtsustab Java koodi kirjutamist, pakkudes annotatsioone getterite, setterite jms genereerimiseks
-		compileOnly 'org.projectlombok:lombok'
-
-		// Spring Boot DevTools, mis kiirendab arendamist, pakkudes automaatset uuesti laadimist ja muid tööriistu
-		developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
-		// PostgreSQL JDBC draiver, mis võimaldab PostgreSQL andmebaasiga ühenduse loomist
-		runtimeOnly 'org.postgresql:postgresql'
-
-		// Lombok annotatsioonitöötlus, mis on vajalik Lomboki annotatsioonide töötlemiseks kompileerimise ajal
+        // Lombok library to reduce boilerplate code in Java (like getters, setters)
+        compileOnly 'org.projectlombok:lombok'
+		// Lombok annotation processor to process Lombok annotations during compilation
 		annotationProcessor 'org.projectlombok:lombok'
+        // Spring Boot DevTools for development-time features such as automatic restart
+        developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-		// Spring Boot testimispakett, mis sisaldab tööriistu ja raamistikke rakenduste testimiseks
-		testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
-		// JUnit platvormi käivitaja, mis võimaldab JUnit testide käivitamist
-		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	}
-
-}
-
-tasks.named('test') {
-	useJUnitPlatform()
+        // PostgreSQL JDBC driver for connecting to PostgreSQL databases
+        runtimeOnly 'org.postgresql:postgresql'
+    }
 }

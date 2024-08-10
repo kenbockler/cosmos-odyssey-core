@@ -25,11 +25,10 @@ public class DataLoaderService implements ApplicationRunner {
     private final PriceListRepository priceListRepository;
     private final ProviderRepository providerRepository;
     private final RouteRepository routeRepository;
-    private final CalculatedRouteRepository calculatedRouteRepository;
     private final ProviderLegRouteCombinedRepository providerLegRouteCombinedRepository;
     private final JdbcTemplate jdbcTemplate;
     private final FlightRouteService flightRouteService;
-    private final CombinedRouteRepository combinedRouteRepository;
+    private final RouteCombinationRepository routeCombinationRepository;
     private final RouteCombinationService routeCombinationService;
 
     @Autowired
@@ -38,43 +37,46 @@ public class DataLoaderService implements ApplicationRunner {
                              PriceListRepository priceListRepository,
                              ProviderRepository providerRepository,
                              RouteRepository routeRepository,
-                             CalculatedRouteRepository calculatedRouteRepository,
                              ProviderLegRouteCombinedRepository providerLegRouteCombinedRepository,
-                             JdbcTemplate jdbcTemplate, FlightRouteService flightRouteService,
-                             CombinedRouteRepository combinedRouteRepository, RouteCombinationService routeCombinationService) {
+                             JdbcTemplate jdbcTemplate,
+                             FlightRouteService flightRouteService,
+                             RouteCombinationRepository routeCombinationRepository, RouteCombinationService routeCombinationService) {
         this.apiClient = apiClient;
         this.legRepository = legRepository;
         this.priceListRepository = priceListRepository;
         this.providerRepository = providerRepository;
         this.routeRepository = routeRepository;
-        this.calculatedRouteRepository = calculatedRouteRepository;
         this.providerLegRouteCombinedRepository = providerLegRouteCombinedRepository;
         this.jdbcTemplate = jdbcTemplate;
         this.flightRouteService = flightRouteService;
-        this.combinedRouteRepository = combinedRouteRepository;
+        this.routeCombinationRepository = routeCombinationRepository;
         this.routeCombinationService = routeCombinationService;
     }
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
+        // Load initial api data
         if (!isDataLoaded()) {
             loadData();
         } else {
-            System.out.println("Data is already loaded, skipping data loading.");
+            System.out.println("API data is already loaded, skipping data loading.");
         }
 
+        // Load combined table for easier querying and for versioning
         if (!isCombinedTableDataLoaded()) {
             createCombinedTable();
         } else {
             System.out.println("Combined table data is already loaded, skipping table creation.");
         }
 
-        if (!isSaveFlightRoutesLoaded()) {
+        // Load flight routes for easier querying for understanding the data
+        if (!flightRouteService.isFlightRoutesLoaded()) {
             flightRouteService.saveFlightRoutes();
         } else {
             System.out.println("Flight routes are already saved, skipping saving flight routes.");
         }
 
+        // Load route combinations for easier querying for understanding the data
         if (!isrouteCombinationServiceLoaded()) {
             routeCombinationService.generateAndSaveRouteCombinations();
         } else {
@@ -85,17 +87,11 @@ public class DataLoaderService implements ApplicationRunner {
     private boolean isDataLoaded() {
         return priceListRepository.count() > 0;
     }
-
     private boolean isCombinedTableDataLoaded() {
         return providerLegRouteCombinedRepository.count() > 0;
     }
-
-    private boolean isSaveFlightRoutesLoaded() {
-        return calculatedRouteRepository.count() > 0;
-    }
-
     private boolean isrouteCombinationServiceLoaded() {
-        return combinedRouteRepository.count() > 0;
+        return routeCombinationRepository.count() > 0;
     }
 
     public void loadData() {
@@ -104,14 +100,14 @@ public class DataLoaderService implements ApplicationRunner {
         UUID priceListId = UUID.fromString(apiResponse.getId());
         Instant validUntil = Instant.parse(apiResponse.getValidUntil());
 
-        // Salvesta price list
+        // Save price list data
         PriceList priceList = PriceList.builder()
                 .priceListId(priceListId)
                 .validUntil(validUntil)
                 .build();
         priceListRepository.save(priceList);
 
-        // Salvesta legs andmed
+        // Save leg data
         for (APIResponse.Leg apiLeg : apiResponse.getLegs()) {
             Leg leg = Leg.builder()
                     .legId(UUID.randomUUID())
@@ -119,7 +115,7 @@ public class DataLoaderService implements ApplicationRunner {
                     .build();
             legRepository.save(leg);
 
-            // Salvesta providers andmed
+            // Save provider data
             for (APIResponse.Leg.Provider apiProvider : apiLeg.getProviders()) {
                 Instant flightStart = Instant.parse(apiProvider.getFlightStart());
                 Instant flightEnd = Instant.parse(apiProvider.getFlightEnd());
@@ -135,13 +131,13 @@ public class DataLoaderService implements ApplicationRunner {
                         .build();
                 providerRepository.save(provider);
 
-                // Arvuta kestvus ja uuenda provider
+                // Calculate and save duration
                 long duration = Duration.between(flightStart, flightEnd).toMillis();
                 provider.setDuration(duration);
                 providerRepository.save(provider);
             }
 
-            // Salvesta route andmed
+            // Save route data
             Route route = Route.builder()
                     .routeId(UUID.randomUUID())
                     .fromId(UUID.fromString(apiLeg.getRouteInfo().getFrom().getId()))
@@ -155,6 +151,7 @@ public class DataLoaderService implements ApplicationRunner {
         }
     }
 
+    // Create a combined table for easier querying
     private void createCombinedTable() {
         String dropSql = "DROP TABLE IF EXISTS provider_leg_route_combined";
         jdbcTemplate.execute(dropSql);

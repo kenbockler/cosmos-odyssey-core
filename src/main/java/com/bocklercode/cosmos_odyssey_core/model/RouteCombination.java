@@ -16,7 +16,7 @@ import java.util.UUID;
 @Builder
 @Entity
 @Table(name = "combined_routes")
-public class CombinedRoute {
+public class RouteCombination {
 
     @Id
     @Column(name = "combined_route_id", nullable = false)
