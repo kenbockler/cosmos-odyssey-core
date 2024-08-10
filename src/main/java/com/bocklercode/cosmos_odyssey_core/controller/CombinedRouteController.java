@@ -1,7 +1,7 @@
 package com.bocklercode.cosmos_odyssey_core.controller;
 
-import com.bocklercode.cosmos_odyssey_core.model.RouteCombination;
-import com.bocklercode.cosmos_odyssey_core.repository.RouteCombinationRepository;
+import com.bocklercode.cosmos_odyssey_core.model.CombinedRoute;
+import com.bocklercode.cosmos_odyssey_core.repository.CombinedRouteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -12,17 +12,17 @@ import java.util.List;
 @RestController
 public class CombinedRouteController {
 
-    private final RouteCombinationRepository routeCombinationRepository;
+    private final CombinedRouteRepository combinedRouteRepository;
 
     @Autowired
-    public CombinedRouteController(RouteCombinationRepository routeCombinationRepository) {
-        this.routeCombinationRepository = routeCombinationRepository;
+    public CombinedRouteController(CombinedRouteRepository combinedRouteRepository) {
+        this.combinedRouteRepository = combinedRouteRepository;
     }
 
     @GetMapping("/routes")
-    public List<RouteCombination> getRoutes(
+    public List<CombinedRoute> getRoutes(
             @RequestParam("from") String fromName,
             @RequestParam("to") String toName) {
-        return routeCombinationRepository.findRoutesByFromAndTo(fromName, toName);
+        return combinedRouteRepository.findByFromNameAndToName(fromName, toName);
     }
 }

@@ -28,8 +28,8 @@ public class DataLoaderService implements ApplicationRunner {
     private final ProviderLegRouteCombinedRepository providerLegRouteCombinedRepository;
     private final JdbcTemplate jdbcTemplate;
     private final FlightRouteService flightRouteService;
-    private final RouteCombinationRepository routeCombinationRepository;
-    private final RouteCombinationService routeCombinationService;
+    private final CombinedRouteRepository combinedRouteRepository;
+    private final CombinedRouteService combinedRouteService;
 
     @Autowired
     public DataLoaderService(APIClient apiClient,
@@ -40,7 +40,7 @@ public class DataLoaderService implements ApplicationRunner {
                              ProviderLegRouteCombinedRepository providerLegRouteCombinedRepository,
                              JdbcTemplate jdbcTemplate,
                              FlightRouteService flightRouteService,
-                             RouteCombinationRepository routeCombinationRepository, RouteCombinationService routeCombinationService) {
+                             CombinedRouteRepository combinedRouteRepository, CombinedRouteService combinedRouteService) {
         this.apiClient = apiClient;
         this.legRepository = legRepository;
         this.priceListRepository = priceListRepository;
@@ -49,8 +49,8 @@ public class DataLoaderService implements ApplicationRunner {
         this.providerLegRouteCombinedRepository = providerLegRouteCombinedRepository;
         this.jdbcTemplate = jdbcTemplate;
         this.flightRouteService = flightRouteService;
-        this.routeCombinationRepository = routeCombinationRepository;
-        this.routeCombinationService = routeCombinationService;
+        this.combinedRouteRepository = combinedRouteRepository;
+        this.combinedRouteService = combinedRouteService;
     }
 
     @Override
@@ -78,7 +78,7 @@ public class DataLoaderService implements ApplicationRunner {
 
         // Load route combinations for easier querying for understanding the data
         if (!isrouteCombinationServiceLoaded()) {
-            routeCombinationService.generateAndSaveRouteCombinations();
+            combinedRouteService.generateAndSaveRouteCombinations();
         } else {
             System.out.println("Route combinations are already saved, skipping saving route combinations.");
         }
@@ -91,7 +91,7 @@ public class DataLoaderService implements ApplicationRunner {
         return providerLegRouteCombinedRepository.count() > 0;
     }
     private boolean isrouteCombinationServiceLoaded() {
-        return routeCombinationRepository.count() > 0;
+        return combinedRouteRepository.count() > 0;
     }
 
     public void loadData() {
