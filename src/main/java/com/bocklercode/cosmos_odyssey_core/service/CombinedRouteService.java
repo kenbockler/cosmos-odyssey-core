@@ -16,12 +16,16 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+// This service calculates and saves all possible route combinations into the combined_routes table
 @Service
 public class CombinedRouteService {
 
+    // The FlightRouteRepository is used to get all possible routes
     private final FlightRouteRepository flightRouteRepository;
+    // The CombinedRouteRepository is used to save the calculated routes
     private final CombinedRouteRepository combinedRouteRepository;
 
+    // The constructor
     @Autowired
     public CombinedRouteService(FlightRouteRepository flightRouteRepository,
                                 CombinedRouteRepository combinedRouteRepository) {
@@ -29,8 +33,9 @@ public class CombinedRouteService {
         this.combinedRouteRepository = combinedRouteRepository;
     }
 
+    // Generates and persists all combinations of routes
     public void generateAndSaveRouteCombinations() {
-        List<FlightRoute> allRoutes = flightRouteRepository.findAll();
+        List<FlightRoute> allRoutes = flightRouteRepository.findAll(); // Get all possible routes
 
         for (FlightRoute initialRoute : allRoutes) {
             List<CombinedRoute> combinations = generateCombinations(initialRoute, allRoutes);
@@ -38,49 +43,56 @@ public class CombinedRouteService {
         }
     }
 
+    // Recursive method to generate all combinations starting from a specific route
     private List<CombinedRoute> generateCombinations(FlightRoute startRoute, List<FlightRoute> allRoutes) {
         List<CombinedRoute> results = new ArrayList<>();
         generateCombinationsRecursive(startRoute, allRoutes, new ArrayList<>(), results, new HashSet<>());
         return results;
     }
 
+    // Recursive helper to build combinations of routes, avoiding visited locations to prevent loops
     private void generateCombinationsRecursive(FlightRoute currentRoute, List<FlightRoute> allRoutes,
                                                List<FlightRoute> currentCombination, List<CombinedRoute> results,
                                                Set<String> visitedLocations) {
-        // Lisame praeguse teekonna nime külastatud asukohtade hulka
+        // Check if the current location has been visited before to avoid loops
+        // base case 1 for recursion
         if (!visitedLocations.add(currentRoute.getFromName())) {
-            return; // Kui see asukoht on juba külastatud, lõpetame rekursiooni
+            return; // Prevents cycles by stopping recursion if the location has been visited
         }
 
-        currentCombination.add(currentRoute);
+        currentCombination.add(currentRoute);  // Adds the current route to the ongoing route combination
 
-        // Leia kõik järgmised lennud, mis algavad praeguse teekonna lõpp-punktist
+        // Find feasible next routes based on current route's destination and timing constraints
         List<FlightRoute> nextRoutes = allRoutes.stream()
-                .filter(route -> route.getFromName().equals(currentRoute.getToName()))
-                .filter(route -> !route.getFlightStart().isBefore(currentRoute.getFlightEnd())) // Kontroll, et järgmine lend ei alga enne eelmist
+                .filter(route -> route.getFromName().equals(currentRoute.getToName())) // Prevent revisiting locations
+                .filter(route -> !route.getFlightStart().isBefore(currentRoute.getFlightEnd())) // Ensure the next flight does not start before the current one ends
                 .collect(Collectors.toList());
 
+        // base case 2 for recursion
         if (nextRoutes.isEmpty()) {
-            // Kui teekonna lõpp-punkti ei ole rohkem jätkuvaid lende, salvestame kombinatsiooni
+
+            // If no further extensions are possible, finalize this combination
             results.add(createCombinedRoute(currentCombination));
         } else {
+            // Continue to extend the current route combination recursively
             for (FlightRoute nextRoute : nextRoutes) {
                 generateCombinationsRecursive(nextRoute, allRoutes, new ArrayList<>(currentCombination), results, new HashSet<>(visitedLocations));
             }
         }
     }
 
+    // Constructs a RouteCombination object from a list of FlightRoute
     private CombinedRoute createCombinedRoute(List<FlightRoute> flightRoutes) {
         UUID combinedRouteId = UUID.randomUUID();
         String fromName = flightRoutes.get(0).getFromName();
         String toName = flightRoutes.get(flightRoutes.size() - 1).getToName();
 
-        // Muudame teekonna loogikat, et see kuvaks pidevat stringi ilma liigsete tühikuteta ja eraldajatega
+        // Builds a string representation of the complete route
         String route = flightRoutes.stream()
                 .map(FlightRoute::getFromName)
-                .distinct()  // Väldime duplikaatide kuvamist
+                .distinct()
                 .collect(Collectors.joining("-->"))
-                + "-->" + toName; // Lisame lõpp-punkti, et kuvada täielik teekond
+                + "-->" + toName;
 
         Instant firstFlightStart = flightRoutes.get(0).getFlightStart();
         Instant lastFlightEnd = flightRoutes.get(flightRoutes.size() - 1).getFlightEnd();
@@ -97,7 +109,7 @@ public class CombinedRouteService {
                 .mapToLong(FlightRoute::getTotalQuotedDistance)
                 .sum();
 
-        return CombinedRoute.builder()
+        return CombinedRoute.builder() // Utilizes the Builder pattern for creating a RouteCombination instance
                 .combinedRouteId(combinedRouteId)
                 .fromName(fromName)
                 .toName(toName)
