@@ -1,21 +1,19 @@
 -- Tabels price_lists, legs, providers, routes is used to store the data from the external API
-DROP TABLE IF EXISTS price_lists;
-CREATE TABLE price_lists
+CREATE TABLE IF NOT EXISTS price_lists
 (
     price_list_id UUID PRIMARY KEY,
-    valid_until   TIMESTAMP NOT NULL
+    valid_until   TIMESTAMP NOT NULL,
+    is_active     BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-DROP TABLE IF EXISTS legs;
-CREATE TABLE legs
+CREATE TABLE IF NOT EXISTS legs
 (
     leg_id        UUID PRIMARY KEY,
     price_list_id UUID NOT NULL,
     FOREIGN KEY (price_list_id) REFERENCES price_lists (price_list_id)
 );
 
-DROP TABLE IF EXISTS providers;
-CREATE TABLE providers
+CREATE TABLE IF NOT EXISTS providers
 (
     provider_id  UUID PRIMARY KEY,
     company_id   UUID           NOT NULL,
@@ -29,8 +27,7 @@ CREATE TABLE providers
     CONSTRAINT provider_flight_duration CHECK (flight_end > flight_start)
 );
 
-DROP TABLE IF EXISTS routes;
-CREATE TABLE routes
+CREATE TABLE IF NOT EXISTS routes
 (
     route_id  UUID PRIMARY KEY,
     from_id   UUID         NOT NULL,

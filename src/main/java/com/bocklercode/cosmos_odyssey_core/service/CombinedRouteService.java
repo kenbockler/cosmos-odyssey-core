@@ -35,12 +35,21 @@ public class CombinedRouteService {
 
     // Generates and persists all combinations of routes
     public void generateAndSaveRouteCombinations() {
+        // Check if there are existing combined routes in the database
+        if (combinedRouteRepository.count() > 0) {
+            // If there are, delete them before generating new combinations
+            combinedRouteRepository.deleteAll();
+            System.out.println("Existing combined routes deleted.");
+        }
+
         List<FlightRoute> allRoutes = flightRouteRepository.findAll(); // Get all possible routes
 
         for (FlightRoute initialRoute : allRoutes) {
             List<CombinedRoute> combinations = generateCombinations(initialRoute, allRoutes);
             combinedRouteRepository.saveAll(combinations);
         }
+
+        System.out.println("Combined routes saved successfully.");
     }
 
     // Recursive method to generate all combinations starting from a specific route
@@ -70,7 +79,6 @@ public class CombinedRouteService {
 
         // base case 2 for recursion
         if (nextRoutes.isEmpty()) {
-
             // If no further extensions are possible, finalize this combination
             results.add(createCombinedRoute(currentCombination));
         } else {
@@ -81,7 +89,7 @@ public class CombinedRouteService {
         }
     }
 
-    // Constructs a RouteCombination object from a list of FlightRoute
+    // Constructs a CombinedRoute object from a list of FlightRoute
     private CombinedRoute createCombinedRoute(List<FlightRoute> flightRoutes) {
         UUID combinedRouteId = UUID.randomUUID();
         String fromName = flightRoutes.get(0).getFromName();
@@ -109,7 +117,7 @@ public class CombinedRouteService {
                 .mapToLong(FlightRoute::getTotalQuotedDistance)
                 .sum();
 
-        return CombinedRoute.builder() // Utilizes the Builder pattern for creating a RouteCombination instance
+        return CombinedRoute.builder() // Utilizes the Builder pattern for creating a CombinedRoute instance
                 .combinedRouteId(combinedRouteId)
                 .fromName(fromName)
                 .toName(toName)

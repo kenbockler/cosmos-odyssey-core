@@ -23,4 +23,7 @@ public class PriceList {
 
     @Column(nullable = false)
     private Instant validUntil;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive;
 }

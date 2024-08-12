@@ -30,6 +30,13 @@ public class FlightRouteService {
 
     // Method to save flight routes into the database
     public void saveFlightRoutes() {
+        // Check if there are existing flight routes in the database
+        if (flightRouteRepository.count() > 0) {
+            // If there are, delete them before saving new routes
+            flightRouteRepository.deleteAll();
+            System.out.println("Existing flight routes deleted.");
+        }
+
         // Retrieve all combined routes data from the repository
         List<ProviderLegRouteCombined> combinedRoutes = providerLegRouteCombinedRepository.findAll();
 
@@ -42,12 +49,6 @@ public class FlightRouteService {
         flightRouteRepository.saveAll(flightRoutes);
 
         System.out.println("Flight routes saved successfully.");
-    }
-
-    // Method to check if flight routes have been loaded into the database
-    boolean isFlightRoutesLoaded() {
-        // Check the count of flight routes to determine if any are loaded
-        return flightRouteRepository.count() > 0;
     }
 
     // Private helper method to convert a combined route from a provider to a FlightRoute entity
