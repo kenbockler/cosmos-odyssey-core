@@ -99,8 +99,8 @@ public class CombinedRouteService {
         String route = flightRoutes.stream()
                 .map(FlightRoute::getFromName)
                 .distinct()
-                .collect(Collectors.joining("-->"))
-                + "-->" + toName;
+                .collect(Collectors.joining(", "))
+                + ", " + toName;
 
         Instant firstFlightStart = flightRoutes.get(0).getFlightStart();
         Instant lastFlightEnd = flightRoutes.get(flightRoutes.size() - 1).getFlightEnd();
