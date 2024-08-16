@@ -19,18 +19,27 @@ import java.util.UUID;
 public class Reservation {
 
     @Id
+    @GeneratedValue
     @Column(name = "reservation_id")
     private UUID reservationId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
+
+    @Column(name = "route", nullable = false)
+    private String route;
 
     @Column(name = "total_quoted_price", nullable = false)
     private BigDecimal totalQuotedPrice;
 
     @Column(name = "total_quoted_travel_time", nullable = false)
-    private long totalQuotedTravelTime;
+    private BigDecimal totalQuotedTravelTime;
+
+    @Column(name = "company_names", nullable = false)
+    private String companyNames;
 
     @ManyToOne
     @JoinColumn(name = "price_list_id", nullable = false)

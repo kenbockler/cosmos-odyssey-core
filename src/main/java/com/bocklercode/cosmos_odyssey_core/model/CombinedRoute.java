@@ -48,4 +48,10 @@ public class CombinedRoute {
 
     @Column(name = "total_distance", nullable = false)
     private long totalDistance;
+
+    @Column(name = "price_list_id", nullable = false)
+    private UUID priceListId;
+
+    @Column(name = "valid_until", nullable = false)
+    private Instant validUntil;
 }

@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.bocklercode'
-version = '0.0.1-SNAPSHOT'
+version = '1.0.0'
 
 java {
     // Configure the Java compiler to use a specific version of Java
@@ -55,5 +55,8 @@ dependencies {
 
         // PostgreSQL JDBC driver for connecting to PostgreSQL databases
         runtimeOnly 'org.postgresql:postgresql'
+
+        // Test dependencies
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
     }
 }

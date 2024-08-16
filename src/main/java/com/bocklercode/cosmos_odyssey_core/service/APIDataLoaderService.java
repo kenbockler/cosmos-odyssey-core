@@ -5,6 +5,7 @@ import com.bocklercode.cosmos_odyssey_core.repository.repository_travel_prices_a
 import com.bocklercode.cosmos_odyssey_core.repository.repository_travel_prices_api.PriceListRepository;
 import com.bocklercode.cosmos_odyssey_core.repository.repository_travel_prices_api.ProviderRepository;
 import com.bocklercode.cosmos_odyssey_core.repository.repository_travel_prices_api.RouteRepository;
+import com.bocklercode.cosmos_odyssey_core.repository.ReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-// Service for loading travel price data from an external API and updating the database accordingly
 @Service
 public class APIDataLoaderService {
 
@@ -25,21 +25,23 @@ public class APIDataLoaderService {
     private final PriceListRepository priceListRepository;
     private final ProviderRepository providerRepository;
     private final RouteRepository routeRepository;
+    private final ReservationRepository reservationRepository;
 
     @Autowired
     public APIDataLoaderService(APIClient apiClient,
                                 LegRepository legRepository,
                                 PriceListRepository priceListRepository,
                                 ProviderRepository providerRepository,
-                                RouteRepository routeRepository) {
+                                RouteRepository routeRepository,
+                                ReservationRepository reservationRepository) {
         this.apiClient = apiClient;
         this.legRepository = legRepository;
         this.priceListRepository = priceListRepository;
         this.providerRepository = providerRepository;
         this.routeRepository = routeRepository;
+        this.reservationRepository = reservationRepository;
     }
 
-    // Transactional method to ensure all database operations complete successfully as a single transaction
     @Transactional
     public boolean loadData() {
         APIResponse apiResponse = apiClient.getTravelPrices();
@@ -52,11 +54,9 @@ public class APIDataLoaderService {
         if (activePriceListOpt.isPresent()) {
             PriceList activePriceList = activePriceListOpt.get();
 
-            // Check if there is a newer price list available and update if necessary
             if (!newPriceListId.equals(activePriceList.getPriceListId()) &&
                     newValidUntil.isAfter(activePriceList.getValidUntil())) {
 
-                // Deactivate all previous price lists and save the new one
                 priceListRepository.deactivateAllPriceLists();
 
                 PriceList priceList = PriceList.builder()
@@ -66,20 +66,16 @@ public class APIDataLoaderService {
                         .build();
                 priceListRepository.save(priceList);
 
-                // Save new legs, providers, and routes from API response
                 saveLegsAndProviders(apiResponse, priceList);
 
-                // Cleanup older price lists to maintain a limited number of records
                 cleanupOldPriceLists();
 
-                // Return true as new data has been successfully saved
                 return true;
             } else {
-                System.out.println("Hinnakiri on juba uusim ja kehtiv. Ei laadita uusi andmeid.");
+                System.out.println("The price list is already up-to-date and valid. No new data will be loaded.");
                 return false;
             }
         } else {
-            // If no active price list is found, create and save a new one
             PriceList priceList = PriceList.builder()
                     .priceListId(newPriceListId)
                     .validUntil(newValidUntil)
@@ -89,15 +85,12 @@ public class APIDataLoaderService {
 
             saveLegsAndProviders(apiResponse, priceList);
 
-            // Cleanup older price lists to maintain a limited number of records
             cleanupOldPriceLists();
 
-            // Return true as new data has been successfully saved
             return true;
         }
     }
 
-    // Saves new legs and providers based on the API response
     private void saveLegsAndProviders(APIResponse apiResponse, PriceList priceList) {
         for (APIResponse.Leg apiLeg : apiResponse.getLegs()) {
             Leg leg = Leg.builder()
@@ -139,7 +132,6 @@ public class APIDataLoaderService {
         }
     }
 
-    // Deletes older price lists
     private void cleanupOldPriceLists() {
         List<PriceList> allPriceLists = priceListRepository.findAllOrderByValidUntilAsc();
         int excessCount = allPriceLists.size() - 15;
@@ -149,16 +141,19 @@ public class APIDataLoaderService {
             for (PriceList priceList : toDelete) {
                 UUID priceListId = priceList.getPriceListId();
 
-                // Delete related data from 'providers' table
+                // Kustutame seotud reserveeringud
+                reservationRepository.deleteByPriceListId(priceListId);
+
+                // Kustutame seotud andmed 'providers' tabelist
                 providerRepository.deleteByPriceListId(priceListId);
 
-                // Delete related data from 'routes' table
+                // Kustutame seotud andmed 'routes' tabelist
                 routeRepository.deleteByPriceListId(priceListId);
 
-                // Delete related data from 'legs' table
+                // Kustutame seotud andmed 'legs' tabelist
                 legRepository.deleteByPriceListId(priceListId);
 
-                // Finally, delete the price list itself
+                // Kustutame hinnakiri ise
                 priceListRepository.delete(priceList);
             }
         }

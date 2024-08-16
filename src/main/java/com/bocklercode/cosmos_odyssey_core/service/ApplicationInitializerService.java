@@ -11,17 +11,14 @@ import java.util.UUID;
 public class ApplicationInitializerService {
 
     private final JdbcTemplate jdbcTemplate;
-    private final FlightRouteService flightRouteService;
     private final CombinedRouteService combinedRouteService;
     private final APIDataLoaderService apiDataLoaderService;
 
     @Autowired
     public ApplicationInitializerService(JdbcTemplate jdbcTemplate,
-                                         FlightRouteService flightRouteService,
                                          CombinedRouteService combinedRouteService,
                                          APIDataLoaderService apiDataLoaderService) {
         this.jdbcTemplate = jdbcTemplate;
-        this.flightRouteService = flightRouteService;
         this.combinedRouteService = combinedRouteService;
         this.apiDataLoaderService = apiDataLoaderService;
     }
@@ -31,7 +28,6 @@ public class ApplicationInitializerService {
         boolean dataUpdated = apiDataLoaderService.loadData();
         if (dataUpdated) {
             createCombinedTable();
-            flightRouteService.saveFlightRoutes();
             combinedRouteService.generateAndSaveRouteCombinations();
             return true;
         } else {
@@ -50,13 +46,16 @@ public class ApplicationInitializerService {
 
         String createSql = "CREATE TABLE provider_leg_route_combined AS " +
                 "SELECT p.provider_id, p.company_id, p.company_name, p.price, p.flight_start, p.flight_end, p.duration, " +
-                "l.leg_id, r.from_id, r.from_name, r.to_id, r.to_name, r.distance " +
+                "l.leg_id, r.from_id, r.from_name, r.to_id, r.to_name, r.distance, " +
+                "l.price_list_id, pl.valid_until " +
                 "FROM providers p " +
                 "JOIN legs l ON p.leg_id = l.leg_id " +
                 "JOIN routes r ON l.leg_id = r.leg_id " +
+                "JOIN price_lists pl ON l.price_list_id = pl.price_list_id " +
                 "WHERE l.price_list_id = ?";
         jdbcTemplate.update(createSql, activePriceListId);
 
         System.out.println("Combined table created successfully for active price list.");
     }
+
 }

@@ -57,4 +57,10 @@ public class ProviderLegRouteCombined {
 
     @Column(name = "distance", nullable = false)
     private long distance;
+
+    @Column(name = "price_list_id", nullable = false)
+    private UUID priceListId;
+
+    @Column(name = "valid_until", nullable = false)
+    private Instant validUntil;
 }
