@@ -1,51 +1,45 @@
 # Cosmos Odyssey Backend Server
 
-See repositoorium sisaldab Cosmos Odyssey veebirakenduse tuumikteenust, 
-mis on loodud pakkuma parimaid reisimarsruute meie päikesesüsteemi planeetide vahel. 
-Rakendus võimaldab klientidel valida reisimarsruute ja teha broneeringuid.
+This repository contains the core service for the Cosmos Odyssey web application, designed to offer the best travel routes between the planets of our solar system. The application allows customers to select travel routes and make reservations.
 
-## Omadused
+The backend server aggregates travel routes and prices offered by various providers, calculates the best routes, and offers customers the ability to easily find the best travel option, including trips with layovers.
 
-* **REST/JSON API**: Rakendus pakub veebiteenust (API), mille kaudu saavad kasutajad pärida teavet 
-erinevate planeetide vaheliste reiside kohta ja teha broneeringuid. 
-See tähendab, et kasutajad saavad saata päringuid serverile ja saada vastuseid JSON-vormingus.
+## Important
 
-* **PostgreSQL Andmebaas**: Andmebaas, kuhu salvestatakse kõik kasutajate broneeringud ja marsruutide andmed.
+**The entire software operates through the collaboration of multiple servers. The complete solution can be launched using Docker containers and Compose:**
 
-## Tehnoloogiad
+[https://github.com/kenbockler/cosmos-odyssey-docker.git](https://github.com/kenbockler/cosmos-odyssey-docker.git)
 
-* Spring Boot
-* Gradle
-* Java
-* PostgreSQL
-* Flyway: Andmebaasi skeemi migratsioonide haldamiseks.
+However, if you only want to start the core backend server, you can follow the steps below.
 
-## Alustamine
+## Getting Started
 
-### Projekti ehitamine
+### Building the Project
 
-1. Klooni repositoorium:
+1. Clone the repository:
 
     ```bash
     git clone https://github.com/kenbockler/cosmos-odyssey-core.git
     ```
-2. Liigu kloonitud repositooriumi kausta:
+
+2. Navigate to the cloned repository directory:
 
     ```bash
     cd cosmos-odyssey-core
     ```
-3. Ehitada projekt:
+
+3. Build the project:
 
     ```bash
     ./gradlew build
     ```
 
-### Rakenduse käivitamine
+### Running the Core Server
 
-1. Käivita rakendus:
+1. Start the core backend server:
 
     ```bash
     java -jar build/libs/cosmos-odyssey-core-1.0.0.jar
     ```
 
-Rakendus peaks nüüd töötama ja olema ligipääsetav pordil 9090.
+The core application should now be running and accessible on port 9090.
