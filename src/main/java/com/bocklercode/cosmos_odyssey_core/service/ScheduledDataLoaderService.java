@@ -42,11 +42,11 @@ public class ScheduledDataLoaderService {
             System.out.println("Current time: " + Instant.now());
             System.out.println("Next API check scheduled for: " + validUntil);
 
-            // Schedule the update task if there is a delay, otherwise execute immediately
-            if (delay > 0) {
+            // If the delay is too small or negative, handle it to prevent immediate rescheduling
+            if (delay > 1000) {  // Only schedule if the delay is more than 1 second
                 scheduler.schedule(this::updateData, delay, TimeUnit.MILLISECONDS);
             } else {
-                // If the time has already passed, update immediately
+                System.out.println("ValidUntil time has passed or is too close. Triggering immediate update.");
                 updateData();
             }
         } else {
@@ -58,12 +58,16 @@ public class ScheduledDataLoaderService {
     // Updates the data and schedules the next update
     public void updateData() {
         try {
-            applicationInitializerService.initializeData();
-            System.out.println("Data successfully updated. Scheduling next update.");
-            scheduleNextUpdate(); // Reschedule the next update based on new `validUntil` time
+            boolean dataUpdated = applicationInitializerService.initializeData();
+            if (dataUpdated) {
+                System.out.println("Data successfully updated. Scheduling next update.");
+                scheduleNextUpdate(); // Reschedule the next update based on new `validUntil` time
+            } else {
+                System.out.println("Data is already up-to-date. No further updates needed.");
+            }
         } catch (Exception e) {
-            System.out.println("Failed to update data. Retrying in 1 second.");
-            scheduler.schedule(this::updateData, 1, TimeUnit.SECONDS);  // Retry in 1-second if update fails
+            System.out.println("Failed to update data. Retrying in 10 seconds.");
+            scheduler.schedule(this::updateData, 10, TimeUnit.SECONDS);  // Retry in 10 seconds if update fails
         }
     }
 }
