@@ -28,10 +28,10 @@ However, if you only want to start the core backend server, you can follow the s
     cd cosmos-odyssey-core
     ```
 
-3. Build the project:
+3. Clean and build the project:
 
     ```bash
-    ./gradlew build
+    ./gradlew clean build
     ```
 
 ### Running the Core Server
